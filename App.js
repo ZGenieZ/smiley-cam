@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Dimensions, TouchableOpacity } from "react-native";
+import * as FaceDetector from "expo-face-detector";
 import { Camera } from "expo-camera";
 import styled from "styled-components";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -25,12 +26,22 @@ const IconBar = styled.View`
 export default function App() {
   const [hasPermission, setHasPermission] = useState(null);
   const [cameraType, setCameraType] = useState(Camera.Constants.Type.front);
+  const [smileDetected, setSmileDetected] = useState(false);
 
   const switchCameraType = () => {
     if (cameraType === Camera.Constants.Type.front) {
       setCameraType(Camera.Constants.Type.back);
     } else {
       setCameraType(Camera.Constants.Type.front);
+    }
+  };
+
+  const onFaceDetected = (faces) => {
+    const face = faces[0];
+    if (face) {
+      if (face.smilingProbability > 0.7) {
+        setSmileDetected(true);
+      }
     }
   };
 
@@ -66,6 +77,12 @@ export default function App() {
           overflow: "hidden",
         }}
         type={cameraType}
+        // 웃는 모습이 감지되면 수치를 매기는 작업을 중지
+        onFacesDetected={smileDetected ? null : onFaceDetected}
+        faceDetectorSettings={{
+          detectLandmarks: FaceDetector.Constants.Landmarks.all,
+          runClassifications: FaceDetector.Constants.Classifications.all,
+        }}
       />
       <IconBar>
         <TouchableOpacity onPress={switchCameraType}>
