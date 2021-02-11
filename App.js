@@ -67,13 +67,18 @@ export default function App() {
 
         // 만약 가져온 앨범이 존재하지 않을시 앨범을 만듬
         if (album === null) {
-          // 안드로이드에서는 createAlbumAsync 2번째 인자로 반드시 asset이 들어가야 하기 때문에 삼항연산자 사용
-          album = await MediaLibrary.createAlbumAsync(
-            ALBUM_NAME,
-            Platform.OS !== "iOS" ? asset : null
-          );
-        } else {
+          // 안드로이드에서는 createAlbumAsync 빈앨범을 만들 수 없다.
+          album = await MediaLibrary.createAlbumAsync(ALBUM_NAME, asset);
         }
+        // 만약 가져온 앨범이 존재할 경우
+        else {
+          await MediaLibrary.addAssetsToAlbumAsync([asset], album.id);
+        }
+        // 앨범에 사진을 넣고 다시 웃는 얼굴 인식을 할 수 있게 해준다.
+        // setTimeout으로 텀을 준 이유는 얼굴 인식이 빠르게 되어 앨범에 asset이 중복으로 2개가 계속 들어가기 때문이다.
+        setTimeout(() => {
+          setSmileDetected(false);
+        }, 2000);
       }
       // 카메라 롤에 접근 거부를 누를시 카메라 종료
       else {
