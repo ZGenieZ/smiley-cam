@@ -1,12 +1,20 @@
 import React, { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Dimensions, TouchableOpacity } from "react-native";
+import {
+  ActivityIndicator,
+  Dimensions,
+  Platform,
+  TouchableOpacity,
+} from "react-native";
 import * as FaceDetector from "expo-face-detector";
 import { Camera } from "expo-camera";
 import styled from "styled-components";
 import { MaterialIcons } from "@expo/vector-icons";
-import { FileSystem } from "expo";
+import * as MediaLibrary from "expo-media-library";
+import * as Permissions from "expo-permissions";
 
 const { width, height } = Dimensions.get("window");
+
+const ALBUM_NAME = "Smiley Cam";
 
 const CenterView = styled.View`
   flex: 1;
@@ -48,7 +56,33 @@ export default function App() {
     }
   };
 
-  const savePhoto = async (uri) => {};
+  const savePhoto = async (uri) => {
+    try {
+      // 카메라 롤에 접근하기 위한 권한 묻기
+      const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
+      // 만약 카메라롤에 접근 허용을 누를 시
+      if (status === "granted") {
+        const asset = await MediaLibrary.createAssetAsync(uri); // 갤러리에 asset 파일 생성
+        let album = await MediaLibrary.getAlbumAsync(ALBUM_NAME); // "Smiley Cam이라는 앨범을 가져온다"
+
+        // 만약 가져온 앨범이 존재하지 않을시 앨범을 만듬
+        if (album === null) {
+          // 안드로이드에서는 createAlbumAsync 2번째 인자로 반드시 asset이 들어가야 하기 때문에 삼항연산자 사용
+          album = await MediaLibrary.createAlbumAsync(
+            ALBUM_NAME,
+            Platform.OS !== "iOS" ? asset : null
+          );
+        } else {
+        }
+      }
+      // 카메라 롤에 접근 거부를 누를시 카메라 종료
+      else {
+        setHasPermission(false);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const takePhoto = async () => {
     try {
