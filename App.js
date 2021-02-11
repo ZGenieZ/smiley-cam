@@ -129,6 +129,7 @@ export default function App() {
 
   return (
     <CenterView>
+      <Text>Smile to take Photo</Text>
       <Camera
         style={{
           width: width - 40,
