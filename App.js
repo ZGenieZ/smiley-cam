@@ -1,47 +1,85 @@
-import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Dimensions } from 'react-native';
-import { Camera } from 'expo-camera'
-import styled from 'styled-components'
+import React, { useEffect, useState } from "react";
+import { ActivityIndicator, Dimensions, TouchableOpacity } from "react-native";
+import { Camera } from "expo-camera";
+import styled from "styled-components";
+import { MaterialIcons } from "@expo/vector-icons";
 
-const {width,height} = Dimensions.get("window")
-
+const { width, height } = Dimensions.get("window");
 
 const CenterView = styled.View`
-flex :1;
-align-items:center;
-justify-content:center;
-background-color:cornflowerblue;
-`; 
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  background-color: cornflowerblue;
+`;
 
 const Text = styled.Text`
-color:white;
-font-size:22px;
-`
+  color: white;
+  font-size: 22px;
+`;
 
+const IconBar = styled.View`
+  margin-top: 45px;
+`;
 
 export default function App() {
-  const [hasPermission, setHasPermission] = useState(null)
-  useEffect(()=>{
-    (async () => {
-      const {status} = await Camera.requestPermissionsAsync()
-      setHasPermission(status === 'granted')
-    })()
-  },[])
+  const [hasPermission, setHasPermission] = useState(null);
+  const [cameraType, setCameraType] = useState(Camera.Constants.Type.front);
 
-  if(hasPermission === null){
-    return <CenterView><ActivityIndicator/></CenterView>
-  } 
-  if(hasPermission === false){
-    return <CenterView>
-    <Text>No access to camera</Text>
-    </CenterView>
+  const switchCameraType = () => {
+    if (cameraType === Camera.Constants.Type.front) {
+      setCameraType(Camera.Constants.Type.back);
+    } else {
+      setCameraType(Camera.Constants.Type.front);
+    }
+  };
+
+  useEffect(() => {
+    (async () => {
+      const { status } = await Camera.requestPermissionsAsync();
+      setHasPermission(status === "granted");
+    })();
+  }, []);
+
+  if (hasPermission === null) {
+    return (
+      <CenterView>
+        <ActivityIndicator />
+      </CenterView>
+    );
   }
-  
+  if (hasPermission === false) {
+    return (
+      <CenterView>
+        <Text>No access to camera</Text>
+      </CenterView>
+    );
+  }
+
   return (
     <CenterView>
-      <Camera style={{width:width - 40, height:height / 1.5,borderRadius:10, overflow:'hidden'}} type={Camera.Constants.Type.front}/>
+      <Camera
+        style={{
+          width: width - 40,
+          height: height / 1.5,
+          borderRadius: 10,
+          overflow: "hidden",
+        }}
+        type={cameraType}
+      />
+      <IconBar>
+        <TouchableOpacity onPress={switchCameraType}>
+          <MaterialIcons
+            name={
+              cameraType === Camera.Constants.Type.front
+                ? "camera-rear"
+                : "camera-front"
+            }
+            color="white"
+            size={50}
+          />
+        </TouchableOpacity>
+      </IconBar>
     </CenterView>
   );
 }
-
-
