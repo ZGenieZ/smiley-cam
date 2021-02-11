@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Dimensions, TouchableOpacity } from "react-native";
 import * as FaceDetector from "expo-face-detector";
 import { Camera } from "expo-camera";
 import styled from "styled-components";
 import { MaterialIcons } from "@expo/vector-icons";
+import { FileSystem } from "expo";
 
 const { width, height } = Dimensions.get("window");
 
@@ -27,6 +28,7 @@ export default function App() {
   const [hasPermission, setHasPermission] = useState(null);
   const [cameraType, setCameraType] = useState(Camera.Constants.Type.front);
   const [smileDetected, setSmileDetected] = useState(false);
+  const cameraRef = useRef();
 
   const switchCameraType = () => {
     if (cameraType === Camera.Constants.Type.front) {
@@ -42,6 +44,25 @@ export default function App() {
       if (face.smilingProbability > 0.7) {
         setSmileDetected(true);
       }
+      takePhoto();
+    }
+  };
+
+  const savePhoto = async (uri) => {};
+
+  const takePhoto = async () => {
+    try {
+      if (cameraRef.current) {
+        let { uri } = await cameraRef.current.takePictureAsync({
+          quality: 1, // 1에 가까워 질수록 high quality
+        });
+        if (uri) {
+          savePhoto(uri);
+        }
+      }
+    } catch (error) {
+      alert(error);
+      setSmileDetected(false);
     }
   };
 
@@ -83,6 +104,7 @@ export default function App() {
           detectLandmarks: FaceDetector.Constants.Landmarks.all,
           runClassifications: FaceDetector.Constants.Classifications.all,
         }}
+        ref={cameraRef}
       />
       <IconBar>
         <TouchableOpacity onPress={switchCameraType}>
